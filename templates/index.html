@@ -63,24 +63,33 @@
     </section>
 
     <section class="results hidden" id="results" aria-live="polite">
-      <div class="results-heading"><div><div class="eyebrow">SIMULATION OUTPUT</div><h2><span id="resultAlgorithm">RR</span> / Execution trace</h2></div><div class="run-meta"><span id="runStatus">RUN COMPLETE</span><small id="runId"></small></div></div>
+      <div class="results-heading">
+        <div><div class="eyebrow">SIMULATION OUTPUT</div><h2><span id="resultAlgorithm">RR</span> execution report</h2></div>
+        <div class="results-actions"><button class="results-link" onclick="document.querySelector('#configure').scrollIntoView({behavior:'smooth'})">← Edit configuration</button><div class="run-meta"><span id="runStatus">RUN COMPLETE</span><small id="runId"></small></div></div>
+      </div>
+
+      <div class="verdict" id="verdict">
+        <div class="verdict-mark"><span id="verdictIcon">✓</span></div>
+        <div class="verdict-copy"><span class="verdict-label">VALIDATION VERDICT</span><h3 id="verdictTitle">Workload is schedulable</h3><p id="verdictText">All modeled tasks complete inside their deadline window.</p></div>
+        <div class="verdict-meta" id="verdictMeta"></div>
+      </div>
       <div class="metric-grid" id="metrics"></div>
 
       <div class="analysis-grid">
         <article class="card gantt-card">
-          <div class="card-head"><div><h3>Core timeline</h3><p>Wall-clock execution including modeled switch overhead</p></div><div class="legend"><span><i class="ok"></i> Deadline met</span><span><i class="late"></i> Missed</span></div></div>
+          <div class="card-head"><div><span class="card-kicker">SCHEDULE TRACE</span><h3>Core timeline</h3><p>Wall-clock execution with switch and cache costs applied</p></div><div class="legend"><span><i class="ok"></i> On time</span><span><i class="late"></i> Deadline missed</span></div></div>
           <div id="gantt"></div>
         </article>
         <article class="card deadline-card">
-          <div class="card-head"><div><h3>Deadline audit</h3><p>Completion vs. absolute deadline</p></div></div>
+          <div class="card-head"><div><span class="card-kicker">REAL-TIME HEALTH</span><h3>Deadline audit</h3><p>Completion time against each absolute deadline</p></div></div>
           <div class="deadline-score" id="deadlineScore"></div>
           <div class="deadline-list" id="deadlineList"></div>
         </article>
       </div>
 
       <div class="analysis-grid lower">
-        <article class="card overhead-card"><div class="card-head"><div><h3>Execution cost</h3><p>Useful work vs. scheduler overhead</p></div></div><div id="overhead"></div></article>
-        <article class="card recommendations"><div class="card-head"><div><h3>Engineering recommendations</h3><p>Rules triggered by this simulation</p></div></div><ol id="recommendations"></ol></article>
+        <article class="card overhead-card"><div class="card-head"><div><span class="card-kicker">COST BREAKDOWN</span><h3>Where the time went</h3><p>Useful execution compared with scheduler overhead</p></div></div><div id="overhead"></div></article>
+        <article class="card recommendations"><div class="card-head"><div><span class="card-kicker">NEXT ACTIONS</span><h3>Engineering recommendations</h3><p>Practical changes suggested by this run</p></div></div><ol id="recommendations"></ol></article>
       </div>
 
       <article class="card comparison hidden" id="comparison">
