@@ -2,7 +2,9 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
-from app import app  # noqa: E402
+import app as app_module  # noqa: E402
+
+app = app_module.app
 
 
 def client():
@@ -54,3 +56,10 @@ def test_invalid_core_count_is_rejected():
     })
     assert response.status_code == 400
     assert "num_cores" in response.get_json()["error"]
+
+
+def test_precompiled_scheduler_works_without_source(monkeypatch, tmp_path):
+    missing_source = tmp_path / "scheduler.cpp"
+    monkeypatch.setattr(app_module, "SCHEDULER_SOURCE", missing_source)
+    assert app_module.SCHEDULER_BIN.exists()
+    app_module.ensure_scheduler()

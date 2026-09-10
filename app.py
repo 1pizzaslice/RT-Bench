@@ -8,10 +8,12 @@ from flask import Flask, jsonify, render_template, request
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, create_engine, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, scoped_session, sessionmaker
+from werkzeug.exceptions import HTTPException
 
 ROOT = Path(__file__).resolve().parent
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{ROOT / 'instance' / 'rtbench.db'}")
 SCHEDULER_BIN = Path(os.getenv("SCHEDULER_BIN", ROOT / "bin" / "scheduler"))
+SCHEDULER_SOURCE = ROOT / "src" / "scheduler.cpp"
 ALGORITHMS = ("FCFS", "SJF", "SRTF", "RR", "PRIORITY", "MLFQ")
 
 
@@ -142,11 +144,17 @@ def validate_workload(items):
 
 
 def ensure_scheduler():
-    source = ROOT / "src" / "scheduler.cpp"
-    if SCHEDULER_BIN.exists() and SCHEDULER_BIN.stat().st_mtime >= source.stat().st_mtime:
+    # Production images contain the precompiled engine but intentionally omit
+    # compiler sources. Local development recompiles only when source is newer.
+    if SCHEDULER_BIN.exists() and (
+        not SCHEDULER_SOURCE.exists()
+        or SCHEDULER_BIN.stat().st_mtime >= SCHEDULER_SOURCE.stat().st_mtime
+    ):
         return
+    if not SCHEDULER_SOURCE.exists():
+        raise RuntimeError("Scheduler executable is missing from this installation")
     SCHEDULER_BIN.parent.mkdir(exist_ok=True)
-    subprocess.run([os.getenv("CXX", "g++"), "-std=c++17", "-O2", str(source), "-o", str(SCHEDULER_BIN)],
+    subprocess.run([os.getenv("CXX", "g++"), "-std=c++17", "-O2", str(SCHEDULER_SOURCE), "-o", str(SCHEDULER_BIN)],
                    check=True, capture_output=True, text=True)
 
 
@@ -216,6 +224,16 @@ def bad_request(error):
 def scheduler_error(error):
     app.logger.exception("Scheduler process failed")
     return jsonify({"error": "The scheduler engine could not complete this simulation."}), 500
+
+
+@app.errorhandler(Exception)
+def unexpected_error(error):
+    if isinstance(error, HTTPException):
+        return error
+    app.logger.exception("Unhandled application error")
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "An unexpected server error occurred."}), 500
+    return "An unexpected server error occurred.", 500
 
 
 @app.teardown_appcontext

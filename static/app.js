@@ -5,7 +5,7 @@ let profiles = [], currentProfile = null, architecture = "ARM", lastResult = nul
 const sampleTask = (n=1) => ({pid:`TASK_${n}`,arrival:0,burst:5,priority:3,deadline:20,deadline_type:"soft",core_affinity:-1});
 
 function toast(message, error=false){const el=$("#toast");el.textContent=message;el.className=`toast show ${error?"error":""}`;setTimeout(()=>el.className="toast",2600)}
-async function api(url, options={}){const response=await fetch(url,{headers:{"Content-Type":"application/json"},...options});const data=await response.json();if(!response.ok)throw new Error(data.error||"Request failed");return data}
+async function api(url, options={}){const response=await fetch(url,{headers:{"Content-Type":"application/json"},...options});const raw=await response.text();let data;try{data=JSON.parse(raw)}catch{throw new Error(response.ok?"Server returned an invalid response":`Server error (${response.status})`)}if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);return data}
 function num(v){return Number(v).toFixed(1)}
 
 function taskRow(task){
