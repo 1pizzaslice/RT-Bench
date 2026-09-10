@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="RTBench validates embedded CPU scheduler behavior against real-time workloads before hardware deployment.">
+  <title>RTBench — Scheduler Validation Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">RT<span>BENCH</span><small>LAB / 01</small></a>
+    <div class="system-state"><i></i> SIMULATION ENGINE READY</div>
+    <nav><a href="#configure">Configure</a><a href="#results">Analysis</a><a href="#about">Method</a></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">PRE-HARDWARE SCHEDULER VALIDATION</div>
+      <h1>Find deadline failures<br><em>before they ship.</em></h1>
+      <p>Model target hardware, run production-like tasks through six CPU schedulers, and expose latency risk without touching a physical board.</p>
+      <div class="hero-stats"><span><b>06</b> ALGORITHMS</span><span><b>16</b> MAX CORES</span><span><b>10.5ms</b> SWITCH MODEL</span></div>
+    </section>
+
+    <section class="workspace" id="configure">
+      <aside class="control-panel">
+        <div class="section-title"><span>01</span><div><h2>Target hardware</h2><p>Define the deployment environment.</p></div></div>
+        <div class="field full"><label for="hardwarePreset">Saved configuration</label><select id="hardwarePreset"><option value="custom">Custom target</option></select></div>
+        <div class="form-grid">
+          <div class="field full"><label for="hardwareName">Configuration name</label><input id="hardwareName" value="Flight Controller A" maxlength="100"></div>
+          <div class="field"><label for="cores">CPU cores</label><input id="cores" type="number" min="1" max="16" value="2"></div>
+          <div class="field"><label for="memory">Memory / MB</label><input id="memory" type="number" min="16" value="512"></div>
+          <div class="field full"><label>Architecture</label><div class="segmented"><button class="active" data-arch="ARM">ARM</button><button data-arch="X86">x86</button></div></div>
+        </div>
+        <button class="text-action" id="saveHardware">＋ Save this hardware configuration</button>
+
+        <div class="divider"></div>
+        <div class="section-title"><span>02</span><div><h2>Scheduling model</h2><p>Choose the policy under test.</p></div></div>
+        <div class="field full"><label for="algorithm">Algorithm</label>
+          <select id="algorithm"><option>FCFS</option><option>SJF</option><option>SRTF</option><option selected>RR</option><option>PRIORITY</option><option>MLFQ</option></select>
+        </div>
+        <div class="field full"><label for="quantum">Base quantum <output id="quantumValue">4 ms</output></label><input id="quantum" type="range" min="1" max="20" value="4"></div>
+      </aside>
+
+      <div class="workload-panel">
+        <div class="section-title"><span>03</span><div><h2>Real-time workload</h2><p>Select a field profile or assemble a custom task set.</p></div></div>
+        <div class="profile-strip" id="profiles"><div class="loading">Loading workload profiles…</div></div>
+        <div class="task-toolbar">
+          <div><strong id="workloadName">Workload tasks</strong><small id="taskCount">0 TASKS</small></div>
+          <div><input type="file" id="fileInput" accept="application/json" hidden><button class="ghost" id="uploadJson">Import JSON</button><button class="ghost" id="saveProfile">Save profile</button><button class="ghost accent" id="addTask">＋ Add task</button></div>
+        </div>
+        <div class="table-wrap">
+          <table class="task-table"><thead><tr><th>Task / PID</th><th>Arrival</th><th>Burst</th><th>Priority</th><th>Deadline</th><th>Type</th><th>Affinity</th><th></th></tr></thead><tbody id="taskRows"></tbody></table>
+        </div>
+        <div class="runbar">
+          <div class="model-note"><i>i</i><span>Model adds <b>0.5 ms</b> per switch and <b>10 ms</b> per cold-cache transition.</span></div>
+          <div class="run-actions"><button class="secondary" id="compareBtn">Compare all 6</button><button class="primary" id="runBtn">Run simulation <span>→</span></button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results hidden" id="results" aria-live="polite">
+      <div class="results-heading"><div><div class="eyebrow">SIMULATION OUTPUT</div><h2><span id="resultAlgorithm">RR</span> / Execution trace</h2></div><div class="run-meta"><span id="runStatus">RUN COMPLETE</span><small id="runId"></small></div></div>
+      <div class="metric-grid" id="metrics"></div>
+
+      <div class="analysis-grid">
+        <article class="card gantt-card">
+          <div class="card-head"><div><h3>Core timeline</h3><p>Wall-clock execution including modeled switch overhead</p></div><div class="legend"><span><i class="ok"></i> Deadline met</span><span><i class="late"></i> Missed</span></div></div>
+          <div id="gantt"></div>
+        </article>
+        <article class="card deadline-card">
+          <div class="card-head"><div><h3>Deadline audit</h3><p>Completion vs. absolute deadline</p></div></div>
+          <div class="deadline-score" id="deadlineScore"></div>
+          <div class="deadline-list" id="deadlineList"></div>
+        </article>
+      </div>
+
+      <div class="analysis-grid lower">
+        <article class="card overhead-card"><div class="card-head"><div><h3>Execution cost</h3><p>Useful work vs. scheduler overhead</p></div></div><div id="overhead"></div></article>
+        <article class="card recommendations"><div class="card-head"><div><h3>Engineering recommendations</h3><p>Rules triggered by this simulation</p></div></div><ol id="recommendations"></ol></article>
+      </div>
+
+      <article class="card comparison hidden" id="comparison">
+        <div class="card-head"><div><h3>Algorithm comparison</h3><p id="compareSummary">Same target. Same workload. Six scheduling strategies.</p></div><button class="ghost" id="closeCompare">Close table</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Algorithm</th><th>Avg wait</th><th>Avg turnaround</th><th>Max latency</th><th>Deadline miss</th><th>Switches</th></tr></thead><tbody id="compareRows"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="method" id="about">
+      <div><span>MODEL / 001</span><h2>Transparent assumptions.<br>No black box.</h2></div>
+      <p>RTBench uses deterministic C++ scheduling models and explicit overhead constants. Results are predictions—not hardware guarantees. Validate promising configurations with worst-case execution times and on-target profiling before production.</p>
+    </section>
+  </main>
+  <footer><a class="brand" href="#">RT<span>BENCH</span></a><p>Embedded scheduler validation console</p><p>Built for pre-silicon decisions.</p></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
