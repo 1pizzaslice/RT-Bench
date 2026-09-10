@@ -30,6 +30,8 @@ function selectProfile(p,el){currentProfile=p;$$('.profile-card').forEach(x=>x.c
 
 $$('[data-arch]').forEach(b=>b.onclick=()=>{architecture=b.dataset.arch;$$('[data-arch]').forEach(x=>x.classList.toggle('active',x===b))});
 $("#quantum").oninput=e=>$("#quantumValue").value=`${e.target.value} ms`;
+const algorithmCopy={FCFS:['FIRST COME, FIRST SERVED','Runs tasks in arrival order with minimal scheduler complexity.'],SJF:['SHORTEST JOB FIRST','Prioritizes the shortest available burst to reduce average wait.'],SRTF:['SHORTEST REMAINING TIME','Preempts longer tasks when a shorter remaining job becomes ready.'],RR:['ROUND ROBIN','Time-sliced scheduling for predictable fairness and response.'],PRIORITY:['PRIORITY SCHEDULING','Runs the highest-priority ready task first; priority 1 is highest.'],MLFQ:['MULTILEVEL FEEDBACK QUEUE','Adapts time slices across queues to balance response and throughput.']};
+$("#algorithm").onchange=e=>{const [label,help]=algorithmCopy[e.target.value];$("#algorithmLabel").textContent=label;$("#algorithmHelp").textContent=help};
 $("#hardwarePreset").onchange=e=>{const o=e.target.selectedOptions[0];if(!o.dataset.value)return;const h=JSON.parse(o.dataset.value);$("#hardwareName").value=h.name;$("#cores").value=h.num_cores;$("#memory").value=h.memory_mb;architecture=h.architecture;$$('[data-arch]').forEach(x=>x.classList.toggle('active',x.dataset.arch===architecture))};
 $("#addTask").onclick=()=>{$("#taskRows").append(taskRow(sampleTask($$('#taskRows tr').length+1)));updateCount()};
 $("#uploadJson").onclick=()=>$("#fileInput").click();

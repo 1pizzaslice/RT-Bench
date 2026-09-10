@@ -19,13 +19,27 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow">PRE-HARDWARE SCHEDULER VALIDATION</div>
-      <h1>Find deadline failures<br><em>before they ship.</em></h1>
-      <p>Model target hardware, run production-like tasks through six CPU schedulers, and expose latency risk without touching a physical board.</p>
+      <div class="hero-copy">
+        <div class="eyebrow">PRE-HARDWARE SCHEDULER VALIDATION</div>
+        <h1>Find deadline failures<br><em>before they ship.</em></h1>
+        <p>Model target hardware, run production-like tasks through six CPU schedulers, and expose latency risk without touching a physical board.</p>
+        <div class="hero-actions"><a class="hero-primary" href="#configure">Configure a simulation <span>→</span></a><a class="hero-secondary" href="#about">How the model works</a></div>
+      </div>
+      <div class="hero-console" aria-label="RTBench validation flow">
+        <div class="console-head"><span>VALIDATION PIPELINE</span><i>READY</i></div>
+        <div class="console-stage active"><span>01</span><div><b>Describe the target</b><small>Cores · memory · architecture</small></div><i>CONFIG</i></div>
+        <div class="console-stage"><span>02</span><div><b>Load a real-time workload</b><small>Arrival · burst · priority · deadline</small></div><i>INPUT</i></div>
+        <div class="console-stage"><span>03</span><div><b>Evaluate scheduler behavior</b><small>Latency · misses · overhead · jitter</small></div><i>REPORT</i></div>
+        <div class="console-foot"><span><i></i> Deterministic C++ engine</span><b>NO HARDWARE REQUIRED</b></div>
+      </div>
       <div class="hero-stats"><span><b>06</b> ALGORITHMS</span><span><b>16</b> MAX CORES</span><span><b>10.5ms</b> SWITCH MODEL</span></div>
     </section>
 
     <section class="workspace" id="configure">
+      <div class="workspace-banner">
+        <div><div class="eyebrow">SIMULATION SETUP</div><h2>Build a validation run</h2><p>Choose a target, scheduler policy, and workload. RTBench handles the rest.</p></div>
+        <div class="setup-progress"><span class="active"><i>1</i>Hardware</span><b></b><span class="active"><i>2</i>Scheduler</span><b></b><span class="active"><i>3</i>Workload</span></div>
+      </div>
       <aside class="control-panel">
         <div class="section-title"><span>01</span><div><h2>Target hardware</h2><p>Define the deployment environment.</p></div></div>
         <div class="field full"><label for="hardwarePreset">Saved configuration</label><select id="hardwarePreset"><option value="custom">Custom target</option></select></div>
@@ -42,6 +56,7 @@
         <div class="field full"><label for="algorithm">Algorithm</label>
           <select id="algorithm"><option>FCFS</option><option>SJF</option><option>SRTF</option><option selected>RR</option><option>PRIORITY</option><option>MLFQ</option></select>
         </div>
+        <div class="algorithm-note"><span id="algorithmLabel">ROUND ROBIN</span><p id="algorithmHelp">Time-sliced scheduling for predictable fairness and response.</p></div>
         <div class="field full"><label for="quantum">Base quantum <output id="quantumValue">4 ms</output></label><input id="quantum" type="range" min="1" max="20" value="4"></div>
       </aside>
 
@@ -57,7 +72,7 @@
         </div>
         <div class="runbar">
           <div class="model-note"><i>i</i><span>Model adds <b>0.5 ms</b> per switch and <b>10 ms</b> per cold-cache transition.</span></div>
-          <div class="run-actions"><button class="secondary" id="compareBtn">Compare all 6</button><button class="primary" id="runBtn">Run simulation <span>→</span></button></div>
+          <div class="run-actions"><button class="secondary" id="compareBtn"><small>FULL BENCHMARK</small>Compare all 6</button><button class="primary" id="runBtn"><small>SELECTED POLICY</small>Run simulation <span>→</span></button></div>
         </div>
       </div>
     </section>
